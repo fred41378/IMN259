@@ -127,10 +127,20 @@ void MImage::LoadImage(const string fileName) {
             num_channels = 1;
             break;
 
+        case '3':
+            ff = PPM_ASCII;
+        num_channels = 3;
+        break;
+
         case '5':
             ff = PGM_RAW;
             num_channels = 1;
             break;
+
+        case '6':
+            ff = PPM_RAW;
+        num_channels = 3;
+        break;
 
         default:
             fatal_error("LoadImage Error: Unsupported file type");
@@ -171,6 +181,16 @@ void MImage::LoadImage(const string fileName) {
                 }
             break;
 
+        case PPM_ASCII:
+            for (int y = 0; y < m_height; y++)
+                for (int x = 0; x < m_width; x++) {
+                    inFile >> val;
+                    at(x, y).r = (float) val * 255.f / maxVal;
+                    at(x, y).g = (float) val * 255.f / maxVal;
+                    at(x, y).b = (float) val * 255.f / maxVal;
+                }
+        break;
+
         case PGM_RAW:
             inFile.get(); /* get the \n */
             for (int y = 0; y < m_height; y++)
@@ -180,6 +200,16 @@ void MImage::LoadImage(const string fileName) {
                 }
             break;
 
+        case PPM_RAW:
+            inFile.get();
+            for (int y = 0; y < m_height; y++)
+                for (int x = 0; x < m_width; x++) {
+                    int valColor = inFile.get();
+                    at(x, y).r = (float) (valColor) * 255.f / maxVal;
+                    at(x, y).g = (float) (valColor) * 255.f / maxVal;
+                    at(x, y).b = (float) (valColor) * 255.f / maxVal;
+                }
+        break;
 
     }
 
@@ -192,6 +222,73 @@ void MImage::LoadImage(const string fileName) {
 */
 void MImage::SaveImage(const string fileName, FILE_FORMAT ff) {
     // *************** TODO ***************
+    char tmpBuf[500];
+    ofstream outFile(fileName);
+    int maxVal, val;
+    char valRaw;
+    unsigned char color;
+    int width, height, num_channels;
+
+    switch (ff) {
+        case PGM_ASCII:
+            outFile << "P2" << "\n" << m_width << " " << m_height << "\n" << "255" << "\n";
+            for (int y = 0; y < m_height; y++) {
+                for (int x = 0; x < m_width; x++) {
+                    if (m_num_channels == 1) {
+                        outFile << (unsigned short) (at(x, y).r) << " ";
+                    }
+                    else {
+                        outFile << (unsigned short) (at(x, y).r + at(x, y).g + at(x, y).b / 3) << " ";
+                    }
+                }
+                outFile << "\n";
+            }
+        break;
+
+        case PPM_ASCII:
+            outFile << "P2" << "\n" << m_width << " " << m_height << "\n" << "255" << "\n";
+        for (int y = 0; y < m_height; y++) {
+            for (int x = 0; x < m_width; x++) {
+                if (m_num_channels == 1) {
+                    outFile << (unsigned short) (at(x, y).r) << " ";
+                }
+                else {
+                    outFile << (unsigned short) (at(x, y).r + at(x, y).g + at(x, y).b / 3) << " ";
+                }
+            }
+            outFile << "\n";
+        }
+        break;
+
+        case PGM_RAW:
+            outFile << "P2" << "\n" << m_width << " " << m_height << "\n" << "255" << "\n";
+        for (int y = 0; y < m_height; y++) {
+            for (int x = 0; x < m_width; x++) {
+                if (m_num_channels == 1) {
+                    outFile << (unsigned short) (at(x, y).r) << " ";
+                }
+                else {
+                    outFile << (unsigned short) (at(x, y).r + at(x, y).g + at(x, y).b / 3) << " ";
+                }
+            }
+            outFile << "\n";
+        }
+        break;
+        case PPM_RAW:
+            outFile << "P2" << "\n" << m_width << " " << m_height << "\n" << "255" << "\n";
+        for (int y = 0; y < m_height; y++) {
+            for (int x = 0; x < m_width; x++) {
+                if (m_num_channels == 1) {
+                    outFile << (unsigned short) (at(x, y).r) << " ";
+                }
+                else {
+                    outFile << (unsigned short) (at(x, y).r + at(x, y).g + at(x, y).b / 3) << " ";
+                }
+            }
+            outFile << "\n";
+        }
+        break;
+    }
 }
 
 
@@ -209,6 +306,11 @@ void MImage::SaveImage(const string fileName, FILE_FORMAT ff) {
 */
 void MImage::Invert() {
     // *************** TODO ***************
+    for (int i = 0; i < m_num_pixels; i++) {
+        m_imgbuf[i].r = 255 - m_imgbuf[i].r;
+        m_imgbuf[i].g = 255 - m_imgbuf[i].g;
+        m_imgbuf[i].b = 255 - m_imgbuf[i].b;
+    }
 }
 
 /*
@@ -216,6 +318,26 @@ void MImage::Invert() {
 */
 void MImage::Threshold(float tvalue) {
     // *************** TODO ***************
+    for (int i = 0; i < m_num_pixels; i++) {
+        if (m_imgbuf[i].r > tvalue) {
+            m_imgbuf[i].r = 255;
+        }
+        else if (m_imgbuf[i].r < tvalue) {
+            m_imgbuf[i].r = 0;
+        }
+        if (m_imgbuf[i].g > tvalue) {
+            m_imgbuf[i].g = 255;
+        }
+        else if (m_imgbuf[i].g < tvalue) {
+            m_imgbuf[i].g = 0;
+        }
+        if (m_imgbuf[i].b > tvalue) {
+            m_imgbuf[i].b = 255;
+        }
+        else if (m_imgbuf[i].b < tvalue) {
+            m_imgbuf[i].b = 0;
+        }
+    }
 }
 
 /*
