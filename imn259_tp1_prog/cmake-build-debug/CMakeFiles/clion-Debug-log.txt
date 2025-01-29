@@ -1,0 +1,4 @@
+C:\Users\frede\AppData\Local\Programs\CLion\bin\cmake\win\x64\bin\cmake.exe -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=C:/Users/frede/AppData/Local/Programs/CLion/bin/ninja/win/x64/ninja.exe -G Ninja -S "C:\Users\frede\Documents\Projects\GitKraken Repo\IMN259\imn259_tp1_prog" -B "C:\Users\frede\Documents\Projects\GitKraken Repo\IMN259\imn259_tp1_prog\cmake-build-debug"
+-- Configuring done (0.5s)
+-- Generating done (0.0s)
+-- Build files have been written to: C:/Users/frede/Documents/Projects/GitKraken Repo/IMN259/imn259_tp1_prog/cmake-build-debug

@@ -1,0 +1,3 @@
+C:/Users/frede/Documents/Projects/GitKraken Repo/IMN259/imn259_tp1_prog/cmake-build-debug/CMakeFiles/IMN259_TP1.dir
+C:/Users/frede/Documents/Projects/GitKraken Repo/IMN259/imn259_tp1_prog/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/frede/Documents/Projects/GitKraken Repo/IMN259/imn259_tp1_prog/cmake-build-debug/CMakeFiles/rebuild_cache.dir
