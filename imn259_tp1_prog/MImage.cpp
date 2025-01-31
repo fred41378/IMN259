@@ -98,11 +98,6 @@ void MImage::Free()
 	load a pgm/ppm image
 */
 void MImage::LoadImage(const string fileName) {
-// *************** TODO ***************
-// ajouter le code pour gérer les formats
-// PPM_ASCII et PPM_RAW.  La version actuelle
-// du code ne gère que PGM_ASCII et PGM_RAW
-// *************** TODO ***************
 
     if (fileName.empty()) {
         fatal_error("Error: Please specify a filename");
@@ -110,7 +105,7 @@ void MImage::LoadImage(const string fileName) {
     FILE_FORMAT ff = PGM_ASCII;
     char tmpBuf[500];
     ifstream inFile;
-    int maxVal, val;
+    int maxVal, val, r_val, g_val, b_val;;
     char valRaw;
     unsigned char color;
     int width, height, num_channels;
@@ -184,10 +179,10 @@ void MImage::LoadImage(const string fileName) {
         case PPM_ASCII:
             for (int y = 0; y < m_height; y++)
                 for (int x = 0; x < m_width; x++) {
-                    inFile >> val;
-                    at(x, y).r = (float) val * 255.f / maxVal;
-                    at(x, y).g = (float) val * 255.f / maxVal;
-                    at(x, y).b = (float) val * 255.f / maxVal;
+                    inFile >> r_val >> g_val >> b_val;
+                    at(x, y).r = (float) r_val * 255.f / maxVal;
+                    at(x, y).g = (float) g_val * 255.f / maxVal;
+                    at(x, y).b = (float) b_val * 255.f / maxVal;
                 }
         break;
 
@@ -204,10 +199,12 @@ void MImage::LoadImage(const string fileName) {
             inFile.get();
             for (int y = 0; y < m_height; y++)
                 for (int x = 0; x < m_width; x++) {
-                    int valColor = inFile.get();
-                    at(x, y).r = (float) (valColor) * 255.f / maxVal;
-                    at(x, y).g = (float) (valColor) * 255.f / maxVal;
-                    at(x, y).b = (float) (valColor) * 255.f / maxVal;
+                    unsigned char rBit = inFile.get();
+                    unsigned char gBit = inFile.get();
+                    unsigned char bBit = inFile.get();
+                    at(x, y).r = (float)(rBit) * 255.f / maxVal;
+                    at(x, y).g = (float)(gBit) * 255.f / maxVal;
+                    at(x, y).b = (float)(bBit) * 255.f / maxVal;
                 }
         break;
 
@@ -221,74 +218,59 @@ void MImage::LoadImage(const string fileName) {
 	save a pgm/ppm image
 */
 void MImage::SaveImage(const string fileName, FILE_FORMAT ff) {
-    // *************** TODO ***************
-    char tmpBuf[500];
-    ofstream outFile(fileName);
-    int maxVal, val;
-    char valRaw;
-    unsigned char color;
-    int width, height, num_channels;
+
+    ofstream outFile;
+    if (ff == PGM_RAW || ff == PPM_RAW)
+        outFile.open(fileName, ios::binary);
+    else
+        outFile.open(fileName);
 
     switch (ff) {
         case PGM_ASCII:
-            outFile << "P2" << "\n" << m_width << " " << m_height << "\n" << "255" << "\n";
+            outFile << "P2\n" << m_width << " " << m_height << "\n" << "255" << "\n";
             for (int y = 0; y < m_height; y++) {
                 for (int x = 0; x < m_width; x++) {
-                    if (m_num_channels == 1) {
-                        outFile << (unsigned short) (at(x, y).r) << " ";
-                    }
-                    else {
-                        outFile << (unsigned short) (at(x, y).r + at(x, y).g + at(x, y).b / 3) << " ";
-                    }
+                    outFile << (int)at(x, y).r << " ";
                 }
                 outFile << "\n";
             }
         break;
 
         case PPM_ASCII:
-            outFile << "P2" << "\n" << m_width << " " << m_height << "\n" << "255" << "\n";
-        for (int y = 0; y < m_height; y++) {
-            for (int x = 0; x < m_width; x++) {
-                if (m_num_channels == 1) {
-                    outFile << (unsigned short) (at(x, y).r) << " ";
+            outFile << "P3\n" << m_width << " " << m_height << "\n" << "255" << "\n";
+            for (int y = 0; y < m_height; y++) {
+                for (int x = 0; x < m_width; x++) {
+                    outFile << (int)at(x, y).r << " " << (int)at(x, y).g << " " << (int)at(x, y).b << " ";
                 }
-                else {
-                    outFile << (unsigned short) (at(x, y).r + at(x, y).g + at(x, y).b / 3) << " ";
-                }
-            }
-            outFile << "\n";
+                outFile << "\n";
         }
         break;
 
         case PGM_RAW:
-            outFile << "P2" << "\n" << m_width << " " << m_height << "\n" << "255" << "\n";
+            outFile << "P5\n" << m_width << " " << m_height << "\n" << "255" << "\n";
         for (int y = 0; y < m_height; y++) {
             for (int x = 0; x < m_width; x++) {
-                if (m_num_channels == 1) {
-                    outFile << (unsigned short) (at(x, y).r) << " ";
-                }
-                else {
-                    outFile << (unsigned short) (at(x, y).r + at(x, y).g + at(x, y).b / 3) << " ";
-                }
+                unsigned char val = (unsigned char)std::clamp(at(x, y).r, 0.f, 255.f);
+                outFile.write((char*)&val, 1);
             }
-            outFile << "\n";
         }
         break;
         case PPM_RAW:
-            outFile << "P2" << "\n" << m_width << " " << m_height << "\n" << "255" << "\n";
+            outFile << "P6\n" << m_width << " " << m_height << "\n" << "255" << "\n";
         for (int y = 0; y < m_height; y++) {
             for (int x = 0; x < m_width; x++) {
-                if (m_num_channels == 1) {
-                    outFile << (unsigned short) (at(x, y).r) << " ";
-                }
-                else {
-                    outFile << (unsigned short) (at(x, y).r + at(x, y).g + at(x, y).b / 3) << " ";
-                }
+                unsigned char r = (unsigned char)std::clamp(at(x, y).r, 0.f, 255.f);
+                unsigned char g = (unsigned char)std::clamp(at(x, y).g, 0.f, 255.f);
+                unsigned char b = (unsigned char)std::clamp(at(x, y).b, 0.f, 255.f);
+
+                outFile.write((char*)&r, 1);
+                outFile.write((char*)&g, 1);
+                outFile.write((char*)&b, 1);
             }
-            outFile << "\n";
         }
         break;
     }
+    outFile.close();
 }
 
 
@@ -305,11 +287,23 @@ void MImage::SaveImage(const string fileName, FILE_FORMAT ff) {
 		Intensity = 255 - oldIntensity
 */
 void MImage::Invert() {
-    // *************** TODO ***************
-    for (int i = 0; i < m_num_pixels; i++) {
-        m_imgbuf[i].r = 255 - m_imgbuf[i].r;
-        m_imgbuf[i].g = 255 - m_imgbuf[i].g;
-        m_imgbuf[i].b = 255 - m_imgbuf[i].b;
+
+    for (int y = 0; y < m_height; y++) {
+        for (int x = 0; x < m_width; x++) {
+            // On vérifie si l'image est en gris ou en couleurs
+            if (m_num_channels == 1)
+            {
+                // On inverse le gris
+                at(x,y).r = 255 - at(x,y).r;
+            }
+            else
+            {
+                // On inverse chaques couleurs
+                at(x,y).r = 255 - at(x,y).r;
+                at(x,y).g = 255 - at(x,y).g;
+                at(x,y).b = 255 - at(x,y).b;
+            }
+        }
     }
 }
 
@@ -317,34 +311,85 @@ void MImage::Invert() {
 	Every pixel with an intensity > 'tvalue' are set to 255.  The other ones are set to 0.
 */
 void MImage::Threshold(float tvalue) {
-    // *************** TODO ***************
-    for (int i = 0; i < m_num_pixels; i++) {
-        if (m_imgbuf[i].r > tvalue) {
-            m_imgbuf[i].r = 255;
-        }
-        else if (m_imgbuf[i].r < tvalue) {
-            m_imgbuf[i].r = 0;
-        }
-        if (m_imgbuf[i].g > tvalue) {
-            m_imgbuf[i].g = 255;
-        }
-        else if (m_imgbuf[i].g < tvalue) {
-            m_imgbuf[i].g = 0;
-        }
-        if (m_imgbuf[i].b > tvalue) {
-            m_imgbuf[i].b = 255;
-        }
-        else if (m_imgbuf[i].b < tvalue) {
-            m_imgbuf[i].b = 0;
+
+    for (int y = 0; y < m_height; y++) {
+        for (int x = 0; x < m_width; x++) {
+            // On vérifie si l'image est en gris ou en couleurs
+            if (m_num_channels == 1)
+            {
+                //On applique le seuil à chaque pixel
+                if (at(x,y).r > tvalue) {
+                    at(x,y).r = 255;
+                }
+                else {
+                    at(x,y).r = 0;
+                }
+            }
+            else
+            {
+                // On applique le seuil à chaque couleur de pixel
+                if (at(x,y).r > tvalue) {
+                    at(x,y).r = 255;
+                }
+                else {
+                    at(x,y).r = 0;
+                }
+                if (at(x,y).g > tvalue) {
+                    at(x,y).g = 255;
+                }
+                else {
+                    at(x,y).g = 0;
+                }
+                if (at(x,y).b > tvalue) {
+                    at(x,y).b = 255;
+                }
+                else {
+                    at(x,y).b = 0;
+                }
+            }
+
         }
     }
+
+
+
 }
 
 /*
 	Rescale the image between 0 and 255
 */
 void MImage::Rescale() {
-    // *************** TODO ***************
+    // Valeurs extremes temporaires
+    float minVal = std::numeric_limits<float>::max();
+    float maxVal = std::numeric_limits<float>::lowest();
+
+    /*
+     Pour chaques pixels, on regarde quel est le min et le max
+     entre le pixel actuel et le précedent.
+     (Initialement, on prend les valeurs extrêmes temporaires)
+    */
+    for(int i = 0; i < m_num_pixels; ++i) {
+        if(m_num_channels == 1) {
+            minVal = std::min(minVal, m_imgbuf[i].r);
+            maxVal = std::max(maxVal, m_imgbuf[i].r);
+        }
+        else {
+            minVal = std::min({minVal, m_imgbuf[i].r, m_imgbuf[i].g, m_imgbuf[i].b});
+            maxVal = std::max({maxVal, m_imgbuf[i].r, m_imgbuf[i].g, m_imgbuf[i].b});
+        }
+    }
+
+    // Puis, on applique la formule du recalage avec les valeurs min et max
+    for(int i = 0; i < m_num_pixels; ++i) {
+        if(m_num_channels == 1) {
+            m_imgbuf[i].r = ((m_imgbuf[i].r - minVal) / maxVal - minVal) * 255.f;
+        }
+        else {
+            m_imgbuf[i].r = ((m_imgbuf[i].r - minVal) / maxVal - minVal) * 255.f;
+            m_imgbuf[i].g = ((m_imgbuf[i].g - minVal) / maxVal - minVal) * 255.f;
+            m_imgbuf[i].b = ((m_imgbuf[i].b - minVal) / maxVal - minVal) * 255.f;
+        }
+    }
 }
 
 /*
@@ -353,8 +398,11 @@ void MImage::Rescale() {
 	For grayscale images, omit this param
 */
 float MImage::Average(int channel = 0) const {
-    // *************** TODO ***************
-    return -1.0f;
+    float total = 0.0f;
+    for(int i = 0; i < m_num_pixels; ++i) {
+        total += GetColorFlat(i, channel);
+    }
+    return total / m_num_pixels;
 }
 
 /*
@@ -363,6 +411,10 @@ float MImage::Average(int channel = 0) const {
 	For grayscale images, omit this param
 */
 float MImage::Contrast(int channel = 0) const {
-    // *************** TODO ***************
-    return -1.0f;
+    float total = 0.0f;
+    float moy = Average(channel);
+    for(int i = 0; i < m_num_pixels; ++i) {
+        total += pow(GetColorFlat(i, channel) - moy, 2) ;
+    }
+    return sqrt(total / m_num_pixels);
 }
