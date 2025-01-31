@@ -250,7 +250,7 @@ void MImage::SaveImage(const string fileName, FILE_FORMAT ff) {
             outFile << "P5\n" << m_width << " " << m_height << "\n" << "255" << "\n";
         for (int y = 0; y < m_height; y++) {
             for (int x = 0; x < m_width; x++) {
-                unsigned char val = (unsigned char)std::clamp(at(x, y).r, 0.f, 255.f);
+                unsigned char val = (unsigned char)at(x, y).r;
                 outFile.write((char*)&val, 1);
             }
         }
@@ -259,9 +259,9 @@ void MImage::SaveImage(const string fileName, FILE_FORMAT ff) {
             outFile << "P6\n" << m_width << " " << m_height << "\n" << "255" << "\n";
         for (int y = 0; y < m_height; y++) {
             for (int x = 0; x < m_width; x++) {
-                unsigned char r = (unsigned char)std::clamp(at(x, y).r, 0.f, 255.f);
-                unsigned char g = (unsigned char)std::clamp(at(x, y).g, 0.f, 255.f);
-                unsigned char b = (unsigned char)std::clamp(at(x, y).b, 0.f, 255.f);
+                unsigned char r = (unsigned char)at(x, y).r;
+                unsigned char g = (unsigned char)at(x, y).g;
+                unsigned char b = (unsigned char)at(x, y).b;
 
                 outFile.write((char*)&r, 1);
                 outFile.write((char*)&g, 1);
@@ -328,31 +328,20 @@ void MImage::Threshold(float tvalue) {
             else
             {
                 // On applique le seuil à chaque couleur de pixel
-                if (at(x,y).r > tvalue) {
-                    at(x,y).r = 255;
+                if (((at(x, y).r + at(x, y).g + at(x, y).b) / 3) < tvalue) {
+                    at(x, y).r = 0;
+                    at(x, y).g = 0;
+                    at(x, y).b = 0;
                 }
                 else {
-                    at(x,y).r = 0;
-                }
-                if (at(x,y).g > tvalue) {
-                    at(x,y).g = 255;
-                }
-                else {
-                    at(x,y).g = 0;
-                }
-                if (at(x,y).b > tvalue) {
-                    at(x,y).b = 255;
-                }
-                else {
-                    at(x,y).b = 0;
+                    at(x, y).r = 255;
+                    at(x, y).g = 255;
+                    at(x, y).b = 255;
                 }
             }
 
         }
     }
-
-
-
 }
 
 /*
