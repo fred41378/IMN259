@@ -26,11 +26,11 @@ int main(int argc, char *argv[]) {
     else
         std::cout << "Average contrast = " << img.Contrast(0) << std::endl;
 
-    // Rescale image
 
+    // Rescale image
     if (img.GetNumChannels() == 1) {
         img.Rescale();
-        img.SaveImage("outR.ppm", PGM_RAW);
+        img.SaveImage("outR.pgm", PGM_RAW);
     }
     else if (img.GetNumChannels() == 3) {
         img.Rescale();
@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
     // Invert gray scales and color
     if (img.GetNumChannels() == 1) {
         img.Invert();
-        img.SaveImage("outI.ppm", PGM_RAW);
+        img.SaveImage("outI.pgm", PGM_RAW);
     }
     else if (img.GetNumChannels() == 3) {
         img.Invert();
@@ -48,15 +48,26 @@ int main(int argc, char *argv[]) {
     }
 
     // Apply threshold
-
     if (img.GetNumChannels() == 1) {
         img.Threshold(128);
-        img.SaveImage("outT.ppm", PGM_RAW);
+        img.SaveImage("outT.pgm", PGM_RAW);
     }
     else if (img.GetNumChannels() == 3) {
         img.Threshold(128);
         img.SaveImage("outT.ppm", PPM_RAW);
     }
+
+    // Rescale image
+    // img.Rescale();
+    // img.SaveImage("outR.ppm", PPM_RAW);
+    //
+    // // Invert gray scales and color
+    // img.Invert();
+    // img.SaveImage("outI.ppm", PPM_RAW);
+    //
+    // // Apply threshold
+    // img.Threshold(128);
+    // img.SaveImage("outT.ppm", PPM_RAW);
 
     return 0;
 }

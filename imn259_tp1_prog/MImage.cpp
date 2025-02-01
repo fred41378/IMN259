@@ -12,7 +12,7 @@ void fatal_error(string message)
 }
 
 /*
-	Default Constructor 
+	Default Constructor
 */
 MImage::MImage()
 {
@@ -315,14 +315,16 @@ void MImage::Threshold(float tvalue) {
     for (int y = 0; y < m_height; y++) {
         for (int x = 0; x < m_width; x++) {
             // On vérifie si l'image est en gris ou en couleurs
+            // cout << at(x, y).r << " " << at(x, y).g << " " << at(x, y).b << "\n";
             if (m_num_channels == 1)
             {
                 //On applique le seuil à chaque pixel
-                if (at(x,y).r > tvalue) {
-                    at(x,y).r = 255;
+                if (at(x,y).r < tvalue) {
+                    at(x,y).r = 0;
                 }
                 else {
-                    at(x,y).r = 0;
+
+                    at(x,y).r = 255;
                 }
             }
             else
@@ -368,15 +370,17 @@ void MImage::Rescale() {
         }
     }
 
+    float range = maxVal - minVal;
+
     // Puis, on applique la formule du recalage avec les valeurs min et max
     for(int i = 0; i < m_num_pixels; ++i) {
         if(m_num_channels == 1) {
-            m_imgbuf[i].r = ((m_imgbuf[i].r - minVal) / maxVal - minVal) * 255.f;
+            m_imgbuf[i].r = ((m_imgbuf[i].r - minVal) / range) * 255.f;
         }
         else {
-            m_imgbuf[i].r = ((m_imgbuf[i].r - minVal) / maxVal - minVal) * 255.f;
-            m_imgbuf[i].g = ((m_imgbuf[i].g - minVal) / maxVal - minVal) * 255.f;
-            m_imgbuf[i].b = ((m_imgbuf[i].b - minVal) / maxVal - minVal) * 255.f;
+            m_imgbuf[i].r = ((m_imgbuf[i].r - minVal) / range) * 255.f;
+            m_imgbuf[i].g = ((m_imgbuf[i].g - minVal) / range) * 255.f;
+            m_imgbuf[i].b = ((m_imgbuf[i].b - minVal) / range) * 255.f;
         }
     }
 }
