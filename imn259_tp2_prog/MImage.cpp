@@ -431,21 +431,36 @@ void MImage::CyclRecal() {
 */
 void MImage::CorrelationFilter(const MImage &corrImg) {
 
+    MImage temp(m_width, m_height, m_num_channels);
+
+    for (int y = 0; y < m_height; y++) {
+        for (int x = 0; x < m_width; x++) {
+            temp.SetColor(0, x, y);
+        }
+    }
+
     for (int m = corrImg.GetHeight()/2; m < m_height-corrImg.GetHeight()/2; ++m) {
         for (int n = corrImg.GetWidth()/2; n < m_width-corrImg.GetWidth()/2; ++n) {
             for (int k = -corrImg.GetHeight()/2; k < corrImg.GetHeight()/2; ++k) {
                 for (int l = -corrImg.GetWidth()/2; l < corrImg.GetWidth()/2; ++l) {
-                    at(n,m).r += at(n + l, m + k).r * corrImg.at(corrImg.GetWidth()/2 + l,corrImg.GetHeight()/2 + k).r;
-                    at(n,m).g += at(n + l, m + k).g * corrImg.at(corrImg.GetWidth()/2 + l,corrImg.GetHeight()/2 + k).g;
-                    at(n,m).b += at(n + l, m + k).b * corrImg.at(corrImg.GetWidth()/2 + l,corrImg.GetHeight()/2 + k).b;
+                    temp.at(n,m).r += at(n + l, m + k).r * corrImg.at(corrImg.GetWidth()/2 + l,corrImg.GetHeight()/2 + k).r;
+                    temp.at(n,m).g += at(n + l, m + k).g * corrImg.at(corrImg.GetWidth()/2 + l,corrImg.GetHeight()/2 + k).g;
+                    temp.at(n,m).b += at(n + l, m + k).b * corrImg.at(corrImg.GetWidth()/2 + l,corrImg.GetHeight()/2 + k).b;
                 }
             }
-            at(n,m).r = at(n,m).r/ (float)(corrImg.GetWidth() * corrImg.GetHeight());
-            at(n,m).g = at(n,m).g/ (float)(corrImg.GetWidth() * corrImg.GetHeight());
-            at(n,m).b = at(n,m).b/ (float)(corrImg.GetWidth() * corrImg.GetHeight());
+            temp.at(n,m).r = temp.at(n,m).r/ (float)(corrImg.GetWidth() * corrImg.GetHeight());
+            temp.at(n,m).g = temp.at(n,m).g/ (float)(corrImg.GetWidth() * corrImg.GetHeight());
+            temp.at(n,m).b = temp.at(n,m).b/ (float)(corrImg.GetWidth() * corrImg.GetHeight());
         }
     }
 
+    for (int m = 0; m < m_height; ++m) {
+        for (int n = 0; n < m_width; ++n) {
+            at(n, m).r = temp.at(n, m).r;
+            at(n, m).g = temp.at(n, m).g;
+            at(n, m).b = temp.at(n, m).b;
+        }
+    }
 }
 
 
