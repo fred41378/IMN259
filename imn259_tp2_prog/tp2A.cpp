@@ -24,7 +24,13 @@ int main(int argc, char*argv[])
 	img.Rescale();
 	
 	/* Save  */
-	img.SaveImage("outCorr.ppm", PPM_RAW);
+	if (img.GetNumChannels() == 1) {
+		img.SaveImage("outCorr.pgm", PGM_RAW);
+	}
+	else if (img.GetNumChannels() == 3) {
+		img.SaveImage("outCorr.ppm", PPM_RAW);
+	}
+
 
 	return 0;
 }
