@@ -6,22 +6,22 @@
 int main(int argc, char*argv[])
 {
 	MImage img1,img2;
-	
+
 	if(argc<3){
         cout << "Erreur: arguments manquants. Arguments a fournir: image FilterRadius" << endl;
 		exit(1);
 	}
-	
+
 	/* Load input image */
 	img1.LoadImage(argv[1]);
-	img2 = img1;	
-	
+	img2 = img1;
+
 	/* Compute FFT */
 	img1.CyclRecal();
 	img2.CyclRecal();
     img1.FFT();
     img2.FFT();
-	
+
 	/* Ideal low-pass filter */
 	img1.SaveSpectralImage("outFFT.pgm", PGM_RAW, true);
 	img1.SpectralIdealLowPassFilter(strtof(argv[2], nullptr));
@@ -38,6 +38,6 @@ int main(int argc, char*argv[])
 	img2.CyclRecal();
 	img2.Rescale();
 	img2.SaveImage("out_highPass.pgm", PGM_RAW);
-	
+
 	return 0;
 }

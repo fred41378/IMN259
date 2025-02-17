@@ -35,6 +35,7 @@ private:
     // 2D element access
     RGBPixel& at(int const x, int const y)
     {
+        //cout<<"at("<<x<<","<<y<<")"<<endl;
         assert(x >= 0 && x < m_width && y >= 0 && y < m_height);
 
         return m_imgbuf[m_width * y + x];
@@ -43,6 +44,7 @@ private:
     // 2D const element access (exactly the same as above, but forbids any modification to the matrix)
     const RGBPixel& at(int const x, int const y) const
     {
+
         assert(x >= 0 && x < m_width && y >= 0 && y < m_height);
 
         return m_imgbuf[m_width * y + x];
