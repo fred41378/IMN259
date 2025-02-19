@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <algorithm>
+#include <vector>
 
 using namespace std;
 
@@ -150,10 +151,15 @@ void MImage::LoadImage(const string fileName) {
     }
     inFile.close();
 
-    if (ff == PGM_ASCII)
-        inFile.open(fileName.c_str(), ios::in);
-    else
+    // if (ff == PGM_ASCII || ff == PPM_RAW)
+    //     inFile.open(fileName.c_str(), ios::in);
+    // else
+    //     inFile.open(fileName.c_str(), ios::in | ios::binary);
+
+    if (ff == PGM_RAW || ff == PPM_RAW)
         inFile.open(fileName.c_str(), ios::in | ios::binary);
+    else
+        inFile.open(fileName.c_str(), ios::in);
 
     inFile.getline(tmpBuf, 500);
     while (nbComm > 0) {
@@ -221,9 +227,9 @@ void MImage::SaveImage(const string fileName, FILE_FORMAT ff) {
 
     ofstream outFile;
     if (ff == PGM_RAW || ff == PPM_RAW)
-        outFile.open(fileName, ios::binary);
+        outFile.open(fileName, ios::out | ios::binary);
     else
-        outFile.open(fileName);
+        outFile.open(fileName, ios::out);
 
     switch (ff) {
         case PGM_ASCII:
@@ -266,6 +272,65 @@ void MImage::SaveImage(const string fileName, FILE_FORMAT ff) {
                 outFile.write((char*)&r, 1);
                 outFile.write((char*)&g, 1);
                 outFile.write((char*)&b, 1);
+            }
+        }
+        break;
+    }
+    outFile.close();
+}
+
+/*
+    save the MAGNITUDE of the current spectral image
+*/
+void MImage::SaveSpectralImage(const string fileName, FILE_FORMAT ff, bool logTransform) {
+
+    ofstream outFile;
+    if (ff == PGM_RAW)
+        outFile.open(fileName, ios::out | ios::binary);
+    else
+        outFile.open(fileName, ios::out);
+
+    switch (ff) {
+        case PGM_ASCII:
+            outFile << "P2\n" << m_width << " " << m_height << "\n" << "255" << "\n";
+
+        for (int m = 0; m < m_height; ++m) {
+            for (int n = 0; n < m_width; ++n) {
+                float real = GetColor(n,m,0);
+                float imag = GetColor(n,m,1);
+                float mag = sqrt(real*real + imag*imag);
+
+                mag = mag/static_cast<float>(m_height*m_width);
+
+                if (logTransform == true) {
+                    mag = log(mag + 1);
+                }
+
+                int valeur = static_cast<int>(mag * 255.0f);
+                if (valeur > 255) valeur = 255;
+
+                outFile << valeur << " ";
+            }
+            outFile << "\n";
+        }
+        break;
+        case PGM_RAW:
+            outFile << "P5\n" << m_width << " " << m_height << "\n" << "255" << "\n";
+        for (int m = 0; m < m_height; ++m) {
+            for (int n = 0; n < m_width; ++n) {
+                float real = GetColor(n,m,0);
+                float imag = GetColor(n,m,1);
+                float mag = sqrt(real*real + imag*imag);
+
+                mag = mag/static_cast<float>(m_height*m_width);
+
+                if (logTransform == true) {
+                    mag = log(mag + 1);
+                }
+                int valeur = static_cast<int>(mag * 255.0f);
+                if (valeur > 255) valeur = 255;
+
+                outFile.write((char*)&valeur, 1);
             }
         }
         break;
@@ -417,7 +482,11 @@ float MImage::Contrast(int channel = 0) const {
 */
 void MImage::CyclRecal() {
     // *************** TODO ****************
-
+    for (int m = 0; m < m_height; ++m) {
+        for (int n = 0; n < m_width; ++n) {
+            at(n,m).r *= static_cast<float>(pow(-1,(n+m)));
+        }
+    }
 }
 
 
@@ -430,30 +499,37 @@ void MImage::CyclRecal() {
     Compute the correlation between the current image and 'corrImg'
 */
 void MImage::CorrelationFilter(const MImage &corrImg) {
-
+    //On crée une image temporaire avec les dimensions de l'image en paramètre
     MImage temp(m_width, m_height, m_num_channels);
 
+    //On la vide
     for (int y = 0; y < m_height; y++) {
         for (int x = 0; x < m_width; x++) {
             temp.SetColor(0, x, y);
         }
     }
 
+    //Tous les pixels de f sauf les bords
     for (int m = corrImg.GetHeight()/2; m < m_height-corrImg.GetHeight()/2; ++m) {
         for (int n = corrImg.GetWidth()/2; n < m_width-corrImg.GetWidth()/2; ++n) {
+            //Tous les pixels de h
             for (int k = -corrImg.GetHeight()/2; k < corrImg.GetHeight()/2; ++k) {
                 for (int l = -corrImg.GetWidth()/2; l < corrImg.GetWidth()/2; ++l) {
+                    //On applique l'algo de la corrélation à chaque pixel de chaques couleurs
+                    // f[k,l]*h[m+k,n+l]
                     temp.at(n,m).r += at(n + l, m + k).r * corrImg.at(corrImg.GetWidth()/2 + l,corrImg.GetHeight()/2 + k).r;
                     temp.at(n,m).g += at(n + l, m + k).g * corrImg.at(corrImg.GetWidth()/2 + l,corrImg.GetHeight()/2 + k).g;
                     temp.at(n,m).b += at(n + l, m + k).b * corrImg.at(corrImg.GetWidth()/2 + l,corrImg.GetHeight()/2 + k).b;
                 }
             }
-            temp.at(n,m).r = temp.at(n,m).r/ (float)(corrImg.GetWidth() * corrImg.GetHeight());
-            temp.at(n,m).g = temp.at(n,m).g/ (float)(corrImg.GetWidth() * corrImg.GetHeight());
-            temp.at(n,m).b = temp.at(n,m).b/ (float)(corrImg.GetWidth() * corrImg.GetHeight());
+            //Division par le nombre de pixels dans le masque h
+            temp.at(n,m).r = temp.at(n,m).r / (float)(corrImg.GetWidth() * corrImg.GetHeight());
+            temp.at(n,m).g = temp.at(n,m).g / (float)(corrImg.GetWidth() * corrImg.GetHeight());
+            temp.at(n,m).b = temp.at(n,m).b / (float)(corrImg.GetWidth() * corrImg.GetHeight());
         }
     }
 
+    //On recopie les résultat de l'image temporaire dans l'image de base
     for (int m = 0; m < m_height; ++m) {
         for (int n = 0; n < m_width; ++n) {
             at(n, m).r = temp.at(n, m).r;
@@ -474,7 +550,25 @@ void MImage::CorrelationFilter(const MImage &corrImg) {
     It is assumed that the current image is a SPECTRAL image.
 */
 void MImage::SpectralIdealLowPassFilter(float radius) {
+    //On trouve le centre en x et en y
+    int centreX = m_width / 2;
+    int centreY = m_height / 2;
 
+    for (int y = 0; y < m_height; ++y) {
+        for (int x = 0; x < m_width; ++x) {
+            //À chaques pixels, on calcule sa coordonnée par rapport au centre
+            int dx = x - centreX;
+            int dy = y - centreY;
+            //Ensuite, on calcule la distance par rapport au centre
+            float distance = sqrt(static_cast<float>(dx * dx + dy * dy));
+
+            //Si la distance est à l'extérieur du rayon, on met les valeurs du pixel à 0
+            if (distance > radius) {
+                at(x, y).r = 0.0f;
+                at(x, y).g = 0.0f;
+            }
+        }
+    }
 }
 
 /*
@@ -482,7 +576,25 @@ void MImage::SpectralIdealLowPassFilter(float radius) {
     It is assumed that the current image is a SPECTRAL image.
 */
 void MImage::SpectralIdealHighPassFilter(float radius) {
+    //On trouve le centre en x et en y
+    int centreX = m_width / 2;
+    int centreY = m_height / 2;
 
+    for (int y = 0; y < m_height; ++y) {
+        for (int x = 0; x < m_width; ++x) {
+            //À chaques pixels, on calcule sa coordonnée par rapport au centre
+            int dx = x - centreX;
+            int dy = y - centreY;
+            //Ensuite, on calcule la distance par rapport au centre
+            float distance = sqrt(static_cast<float>(dx * dx + dy * dy));
+
+            //Si la distance est à l'intérieur du rayon, on met les valeurs du pixel à 0
+            if (distance < radius) {
+                at(x, y).r = 0.0f;
+                at(x, y).g = 0.0f;
+            }
+        }
+    }
 }
 
 
