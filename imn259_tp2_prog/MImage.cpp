@@ -303,10 +303,10 @@ void MImage::SaveSpectralImage(const string fileName, FILE_FORMAT ff, bool logTr
                 mag = mag/static_cast<float>(m_height*m_width);
 
                 if (logTransform == true) {
-                    mag = log(mag + 1);
+                    mag = 250.0f*log(mag + 1);
                 }
 
-                int valeur = static_cast<int>(mag * 255.0f);
+                int valeur = static_cast<int>(mag);
                 if (valeur > 255) valeur = 255;
 
                 outFile << valeur << " ";
@@ -325,9 +325,9 @@ void MImage::SaveSpectralImage(const string fileName, FILE_FORMAT ff, bool logTr
                 mag = mag/static_cast<float>(m_height*m_width);
 
                 if (logTransform == true) {
-                    mag = log(mag + 1);
+                    mag = 250.0f*log(mag + 1);
                 }
-                int valeur = static_cast<int>(mag * 255.0f);
+                int valeur = static_cast<int>(mag);
                 if (valeur > 255) valeur = 255;
 
                 outFile.write((char*)&valeur, 1);
@@ -481,7 +481,6 @@ float MImage::Contrast(int channel = 0) const {
     multiply the image by -1^(x+y)
 */
 void MImage::CyclRecal() {
-    // *************** TODO ****************
     for (int m = 0; m < m_height; ++m) {
         for (int n = 0; n < m_width; ++n) {
             at(n,m).r *= static_cast<float>(pow(-1,(n+m)));
@@ -529,7 +528,7 @@ void MImage::CorrelationFilter(const MImage &corrImg) {
         }
     }
 
-    //On recopie les résultat de l'image temporaire dans l'image de base
+    //On recopie les résultats de l'image temporaire dans l'image de base
     for (int m = 0; m < m_height; ++m) {
         for (int n = 0; n < m_width; ++n) {
             at(n, m).r = temp.at(n, m).r;
@@ -562,7 +561,7 @@ void MImage::SpectralIdealLowPassFilter(float radius) {
             //Ensuite, on calcule la distance par rapport au centre
             float distance = sqrt(static_cast<float>(dx * dx + dy * dy));
 
-            //Si la distance est à l'extérieur du rayon, on met les valeurs du pixel à 0
+            //Si la distance est à l'extérieur du rayon, on met les valeurs du pixel à 0.
             if (distance > radius) {
                 at(x, y).r = 0.0f;
                 at(x, y).g = 0.0f;
@@ -588,7 +587,7 @@ void MImage::SpectralIdealHighPassFilter(float radius) {
             //Ensuite, on calcule la distance par rapport au centre
             float distance = sqrt(static_cast<float>(dx * dx + dy * dy));
 
-            //Si la distance est à l'intérieur du rayon, on met les valeurs du pixel à 0
+            //Si la distance est à l'intérieur du rayon, on met les valeurs du pixel à 0.
             if (distance < radius) {
                 at(x, y).r = 0.0f;
                 at(x, y).g = 0.0f;
