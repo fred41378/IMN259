@@ -21,7 +21,13 @@ int main(int argc, char*argv[])
 	
 	/* Apply gamma correction */
 	img.GammaCorrect(strtof(argv[2], nullptr));
-	img.SaveImage("outGammaCorrected.ppm",PPM_RAW);
+	if (img.GetNumChannels() == 1) {
+		img.SaveImage("outGammaCorrected.ppm",PGM_RAW);
+	}
+	else if (img.GetNumChannels() == 3) {
+		img.SaveImage("outGammaCorrected.ppm",PPM_RAW);
+	}
+
 
 	return 0;
 }

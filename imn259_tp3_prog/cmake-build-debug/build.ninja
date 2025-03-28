@@ -49,8 +49,8 @@ cmake_ninja_workdir = C$:/Users/frede/Documents/Projects/GitKraken$ Repo/IMN259/
 
 build cmake_object_order_depends_target_IMN259_TP3: phony || .
 
-build CMakeFiles/IMN259_TP3.dir/tp3A.cpp.obj: CXX_COMPILER__IMN259_TP3_unscanned_Debug C$:/Users/frede/Documents/Projects/GitKraken$ Repo/IMN259/imn259_tp3_prog/tp3A.cpp || cmake_object_order_depends_target_IMN259_TP3
-  DEP_FILE = CMakeFiles\IMN259_TP3.dir\tp3A.cpp.obj.d
+build CMakeFiles/IMN259_TP3.dir/tp3E.cpp.obj: CXX_COMPILER__IMN259_TP3_unscanned_Debug C$:/Users/frede/Documents/Projects/GitKraken$ Repo/IMN259/imn259_tp3_prog/tp3E.cpp || cmake_object_order_depends_target_IMN259_TP3
+  DEP_FILE = CMakeFiles\IMN259_TP3.dir\tp3E.cpp.obj.d
   FLAGS = -g -fdiagnostics-color=always
   OBJECT_DIR = CMakeFiles\IMN259_TP3.dir
   OBJECT_FILE_DIR = CMakeFiles\IMN259_TP3.dir
@@ -69,7 +69,7 @@ build CMakeFiles/IMN259_TP3.dir/MImage.cpp.obj: CXX_COMPILER__IMN259_TP3_unscann
 #############################################
 # Link the executable IMN259_TP3.exe
 
-build IMN259_TP3.exe: CXX_EXECUTABLE_LINKER__IMN259_TP3_Debug CMakeFiles/IMN259_TP3.dir/tp3A.cpp.obj CMakeFiles/IMN259_TP3.dir/MImage.cpp.obj
+build IMN259_TP3.exe: CXX_EXECUTABLE_LINKER__IMN259_TP3_Debug CMakeFiles/IMN259_TP3.dir/tp3E.cpp.obj CMakeFiles/IMN259_TP3.dir/MImage.cpp.obj
   FLAGS = -g
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\IMN259_TP3.dir

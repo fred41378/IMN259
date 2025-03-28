@@ -20,7 +20,12 @@ int main(int argc, char*argv[])
 	img.AverageFilter(atoi(argv[2]));
 	
 	/* Save */
-	img.SaveImage("outAverage.ppm", PPM_RAW);
+	if (img.GetNumChannels() == 1) {
+		img.SaveImage("outAverage.ppm", PGM_RAW);
+	}
+	else if (img.GetNumChannels() == 3) {
+		img.SaveImage("outAverage.ppm", PPM_RAW);
+	}
 
 	return 0;
 }

@@ -21,7 +21,13 @@ int main(int argc, char*argv[])
 	img.LowpassGaussianFilter(strtof(argv[2], nullptr));
 	
 	/* Save */
-	img.SaveImage("outLPG.ppm", PPM_RAW);
+	img.SaveImage("outLPG.ppm", PGM_RAW);
+	if (img.GetNumChannels() == 1) {
+		img.SaveImage("outLPG.ppm", PGM_RAW);
+	}
+	else if (img.GetNumChannels() == 3) {
+		img.SaveImage("outLPG.ppm", PPM_RAW);
+	}
 
 	return 0;
 }

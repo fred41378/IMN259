@@ -1,5 +1,5 @@
 #include "MImage.h"
-
+#include "math.h"
 #include <fstream>
 #include <algorithm>
 
@@ -484,6 +484,7 @@ void MImage::CyclRecal() {
     for (int m = 0; m < m_height; ++m) {
         for (int n = 0; n < m_width; ++n) {
             at(n,m).r *= static_cast<float>(pow(-1,(n+m)));
+            at(n,m).g *= static_cast<float>(pow(-1,(n+m)));
         }
     }
 }
@@ -529,7 +530,34 @@ void MImage::HistogramEqualization() {
     Gamma correction of the current image
 */
 void MImage::GammaCorrect(float gamma) {
-    // *************** TODO ****************
+   for (int i = 0; i < m_num_pixels; ++i) {
+       if (m_num_channels == 1) {
+           //Valeur du pixel a cette cood
+           float& valeur = m_imgbuf[i].r;
+           //On s'assure qu'il n'y a pas de valeur hors du scope voulu
+           valeur = std::clamp(valeur, 0.0f, 255.0f);
+           //On normalise les vleur
+           float normalise = valeur / 255.0f;
+           //On applique la formule
+           float pixelCorrige = pow(normalise, gamma);
+           //On ramene les valeurs
+           valeur = pixelCorrige * 255.0f;
+       }
+       else {
+           //meme chose sans la normalisation pour chaque canal
+           float& r = m_imgbuf[i].r;
+           r = std::clamp(r, 0.0f, 255.0f);
+           r = pow(r / 255.0f, gamma) * 255.0f;
+
+           float& g = m_imgbuf[i].g;
+           g = std::clamp(g, 0.0f, 255.0f);
+           g = pow(g / 255.0f, gamma) * 255.0f;
+
+           float& b = m_imgbuf[i].b;
+           b = std::clamp(b, 0.0f, 255.0f);
+           b = pow(b / 255.0f, gamma) * 255.0f;
+       }
+   }
 }
 
 
@@ -556,8 +584,8 @@ void MImage::CorrelationFilter(const MImage &corrImg) {
     for (int m = corrImg.GetHeight()/2; m < m_height-corrImg.GetHeight()/2; ++m) {
         for (int n = corrImg.GetWidth()/2; n < m_width-corrImg.GetWidth()/2; ++n) {
             //Tous les pixels de h
-            for (int k = -corrImg.GetHeight()/2; k < corrImg.GetHeight()/2; ++k) {
-                for (int l = -corrImg.GetWidth()/2; l < corrImg.GetWidth()/2; ++l) {
+            for (int k = -corrImg.GetHeight()/2; k <= corrImg.GetHeight()/2; ++k) {
+                for (int l = -corrImg.GetWidth()/2; l <= corrImg.GetWidth()/2; ++l) {
                     //On applique l'algo de la corrélation à chaque pixel de chaques couleurs
                     // f[k,l]*h[m+k,n+l]
                     temp.at(n,m).r += at(n + l, m + k).r * corrImg.at(corrImg.GetWidth()/2 + l,corrImg.GetHeight()/2 + k).r;
@@ -565,19 +593,13 @@ void MImage::CorrelationFilter(const MImage &corrImg) {
                     temp.at(n,m).b += at(n + l, m + k).b * corrImg.at(corrImg.GetWidth()/2 + l,corrImg.GetHeight()/2 + k).b;
                 }
             }
-            //Division par le nombre de pixels dans le masque h
-            temp.at(n,m).r = temp.at(n,m).r / (float)(corrImg.GetWidth() * corrImg.GetHeight());
-            temp.at(n,m).g = temp.at(n,m).g / (float)(corrImg.GetWidth() * corrImg.GetHeight());
-            temp.at(n,m).b = temp.at(n,m).b / (float)(corrImg.GetWidth() * corrImg.GetHeight());
         }
     }
 
     //On recopie les résultats de l'image temporaire dans l'image de base
     for (int m = 0; m < m_height; ++m) {
         for (int n = 0; n < m_width; ++n) {
-            at(n, m).r = temp.at(n, m).r;
-            at(n, m).g = temp.at(n, m).g;
-            at(n, m).b = temp.at(n, m).b;
+            at(n, m) = temp.at(n, m);
         }
     }
 }
@@ -587,16 +609,85 @@ void MImage::CorrelationFilter(const MImage &corrImg) {
     standard-deviation
     The mask filter must have a size of : 6*sigma+1 x 6*sigma+1
 */
+
 void MImage::LowpassGaussianFilter(float sigma) {
-    // *************** TODO ***************
+    const int taille_filtre = static_cast<int>(6 * sigma) + 1;
+    const int centre = (taille_filtre - 1) / 2;
+
+    MImage filtre(taille_filtre, taille_filtre, 1);
+    float total = 0.0f;
+    //super nom de variable tres original
+    const float deux_pi_sigma_carre = 2.0f * M_PI * sigma * sigma;
+    for (int y = 0; y < taille_filtre; ++y) {
+        for (int x = 0; x < taille_filtre; ++x) {
+            const int dx = x - centre;
+            const int dy = y - centre;
+            const float exposant = -(dx*dx + dy*dy) / (2 * sigma * sigma);
+            const float valeur = exp(exposant) / deux_pi_sigma_carre;
+            filtre.at(x, y).r = valeur;
+            if (m_num_channels == 3) {
+                filtre.at(x, y).g = valeur;
+                filtre.at(x, y).b = valeur;
+            }
+            total += valeur;
+        }
+    }
+
+    for (int y = 0; y < taille_filtre; ++y) {
+        for (int x = 0; x < taille_filtre; ++x) {
+            filtre.at(x, y).r /= total;
+            if (m_num_channels == 3) {
+                filtre.at(x, y).g /= total;
+                filtre.at(x, y).b /= total;
+            }
+        }
+    }
+
+    this->CorrelationFilter(filtre);
 }
+
 
 /*
     Computes the local average gray-scale value over a window of size
     (halfwinsize*2+1) x (halfwinsize*2+1)
 */
 void MImage::AverageFilter(int halfwinsize) {
-    // *************** TODO ***************
+    MImage g(m_width, m_height, m_num_channels);
+    for (int y = 0; y < m_height; ++y) {
+        for (int x = 0; x < m_width; ++x) {
+            float total_r = 0.0f, total_g = 0.0f, total_b = 0.0f;
+            int compte = 0;
+            for (int dy = -halfwinsize; dy <= halfwinsize; ++dy) {
+                int voisin_y = y + dy;
+                if (voisin_y >= m_height || voisin_y < 0) continue;
+
+                for (int dx = -halfwinsize; dx <= halfwinsize; ++dx) {
+                    int voisin_x = x + dx;
+                    if (voisin_x >= m_width || voisin_x < 0) continue;
+
+                    total_r += at(voisin_x, voisin_y).r;
+                    if (m_num_channels == 3) {
+                        total_g += at(voisin_x, voisin_y).g;
+                        total_b += at(voisin_x, voisin_y).b;
+                    }
+                    compte++;
+                }
+            }
+            g.at(x, y).r = total_r / static_cast<float>(compte);
+            if (m_num_channels == 3) {
+                g.at(x, y).g = total_g / static_cast<float>(compte);
+                g.at(x, y).b = total_b / static_cast<float>(compte);
+            } else {
+                g.at(x, y).g = 0.0f;
+                g.at(x, y).b = 0.0f;
+            }
+        }
+    }
+    for (int y = 0; y < m_height; ++y) {
+        for (int x = 0; x < m_width; ++x) {
+            at(x, y) = g.at(x, y);
+        }
+    }
 }
 
 
@@ -663,7 +754,57 @@ void MImage::SpectralIdealHighPassFilter(float radius) {
     Apply an average low-pass filter via an FFT
 */
 void MImage::SpectralAverageFilter(int halfwinsize) {
-    // *************** TODO ***************
+    //On crée une image temporaire avec les dimensions de l'image en paramètre
+    MImage h(m_width, m_height, m_num_channels);
+
+    //On la vide
+    for (int y = 0; y < m_height; y++) {
+        for (int x = 0; x < m_width; x++) {
+            h.SetColor(0, x, y, 0);
+            h.SetColor(0, x, y, 1);
+        }
+    }
+    int taille_filtre = 2 * halfwinsize + 1;
+    float valeur_h = 1.0f / (taille_filtre * taille_filtre);
+    int centre_h_x = m_width / 2;
+    int centre_h_y = m_height / 2;
+
+    int debut_h_x = centre_h_x - halfwinsize;
+    int debut_h_y = centre_h_y - halfwinsize;
+    int fin_h_x = centre_h_x + halfwinsize;
+    int fin_h_y = centre_h_y + halfwinsize;
+
+    for (int y = debut_h_y; y <= fin_h_y; y++) {
+        for (int x = debut_h_x; x <= fin_h_x; x++) {
+            h.SetColor(valeur_h, x, y, 0);
+        }
+    }
+    this->CyclRecal();
+    h.CyclRecal();
+    this->FFT();
+    h.FFT();
+
+    MImage g(m_width, m_height, m_num_channels);
+    for (int x = 0; x < m_width; x++) {
+        for (int y = 0; y < m_height; y++) {
+            float f_real = at(x, y).r;
+            float f_imag = at(x, y).g;
+            float h_real = h.at(x, y).r;
+            float h_imag = h.at(x, y).g;
+
+            g.at(x, y).r = f_real * h_real - f_imag * h_imag;
+            g.at(x, y).g = f_real * h_imag + f_imag * h_real;
+        }
+    }
+    g.CyclRecal();
+    g.IFFT();
+    g.CyclRecal();
+    g.Rescale();
+    for (int y = 0; y < m_height; ++y) {
+        for (int x = 0; x < m_width; ++x) {
+            at(x, y) = g.at(x, y);
+        }
+    }
 }
 
 
