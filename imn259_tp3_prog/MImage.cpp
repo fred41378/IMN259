@@ -1,5 +1,4 @@
 #include "MImage.h"
-#include "math.h"
 #include <fstream>
 #include <algorithm>
 
@@ -12,7 +11,7 @@ void fatal_error(string message)
 }
 
 /*
-	Default Constructor 
+	Default Constructor
 */
 MImage::MImage()
 {
@@ -483,8 +482,8 @@ float MImage::Contrast(int channel = 0) const {
 void MImage::CyclRecal() {
     for (int m = 0; m < m_height; ++m) {
         for (int n = 0; n < m_width; ++n) {
-            at(n,m).r *= static_cast<float>(pow(-1,(n+m)));
-            at(n,m).g *= static_cast<float>(pow(-1,(n+m)));
+            at(n,m).r *= static_cast<float>(pow(-1,n+m));
+            at(n,m).g *= static_cast<float>(pow(-1,n+m));
         }
     }
 }
@@ -573,26 +572,35 @@ void MImage::CorrelationFilter(const MImage &corrImg) {
     //On crée une image temporaire avec les dimensions de l'image en paramètre
     MImage temp(m_width, m_height, m_num_channels);
 
-    //On la vide
-    for (int y = 0; y < m_height; y++) {
-        for (int x = 0; x < m_width; x++) {
-            temp.SetColor(0, x, y);
-        }
-    }
+    int half_corr_width = corrImg.GetWidth() / 2;
+    int half_corr_height = corrImg.GetHeight() / 2;
 
     //Tous les pixels de f sauf les bords
-    for (int m = corrImg.GetHeight()/2; m < m_height-corrImg.GetHeight()/2; ++m) {
-        for (int n = corrImg.GetWidth()/2; n < m_width-corrImg.GetWidth()/2; ++n) {
+    for (int m =0; m < m_height; ++m) {
+        for (int n = 0; n < m_width; ++n) {
+            float total_r = 0.0f, total_g = 0.0f, total_b = 0.0f;
             //Tous les pixels de h
-            for (int k = -corrImg.GetHeight()/2; k <= corrImg.GetHeight()/2; ++k) {
-                for (int l = -corrImg.GetWidth()/2; l <= corrImg.GetWidth()/2; ++l) {
+            for (int k = -half_corr_height; k <= half_corr_height; ++k) {
+                for (int l = -half_corr_width; l <= half_corr_width; ++l) {
                     //On applique l'algo de la corrélation à chaque pixel de chaques couleurs
-                    // f[k,l]*h[m+k,n+l]
-                    temp.at(n,m).r += at(n + l, m + k).r * corrImg.at(corrImg.GetWidth()/2 + l,corrImg.GetHeight()/2 + k).r;
-                    temp.at(n,m).g += at(n + l, m + k).g * corrImg.at(corrImg.GetWidth()/2 + l,corrImg.GetHeight()/2 + k).g;
-                    temp.at(n,m).b += at(n + l, m + k).b * corrImg.at(corrImg.GetWidth()/2 + l,corrImg.GetHeight()/2 + k).b;
+                    int x = n + l;
+                    int y = m + k;
+
+                    x = std::max(0, std::min(x, m_width - 1));
+                    y = std::max(0, std::min(y, m_height - 1));
+
+                    int corr_x = l + half_corr_width;
+                    int corr_y = k + half_corr_height;
+
+                    total_r += at(x, y).r * corrImg.at(corr_x, corr_y).r;
+                    if (m_num_channels == 3) {
+                        total_g += at(x, y).g * corrImg.at(corr_x, corr_y).g;
+                        total_b += at(x, y).b * corrImg.at(corr_x, corr_y).b;
+                    }
                 }
             }
+            temp.at(n, m).r = total_r;
+            temp.at(n, m).g = total_g;
         }
     }
 
@@ -757,13 +765,6 @@ void MImage::SpectralAverageFilter(int halfwinsize) {
     //On crée une image temporaire avec les dimensions de l'image en paramètre
     MImage h(m_width, m_height, m_num_channels);
 
-    //On la vide
-    for (int y = 0; y < m_height; y++) {
-        for (int x = 0; x < m_width; x++) {
-            h.SetColor(0, x, y, 0);
-            h.SetColor(0, x, y, 1);
-        }
-    }
     int taille_filtre = 2 * halfwinsize + 1;
     float valeur_h = 1.0f / (taille_filtre * taille_filtre);
     int centre_h_x = m_width / 2;
@@ -799,7 +800,6 @@ void MImage::SpectralAverageFilter(int halfwinsize) {
     g.CyclRecal();
     g.IFFT();
     g.CyclRecal();
-    g.Rescale();
     for (int y = 0; y < m_height; ++y) {
         for (int x = 0; x < m_width; ++x) {
             at(x, y) = g.at(x, y);

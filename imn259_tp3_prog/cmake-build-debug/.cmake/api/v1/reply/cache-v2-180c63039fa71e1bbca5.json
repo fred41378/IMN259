@@ -55,7 +55,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "c:/Users/frede/Documents/Projects/GitKraken Repo/IMN259/imn259_tp3_prog/cmake-build-debug"
+			"value" : "c:/Users/frede/OneDrive/Documents/Projet_GitKraken/IMN259/imn259_tp3_prog/cmake-build-debug"
 		},
 		{
 			"name" : "CMAKE_CACHE_MAJOR_VERSION",
@@ -104,6 +104,22 @@
 			],
 			"type" : "BOOL",
 			"value" : "ON"
+		},
+		{
+			"name" : "CMAKE_COLOR_MAKEFILE",
+			"properties" : 
+			[
+				{
+					"name" : "ADVANCED",
+					"value" : "1"
+				},
+				{
+					"name" : "HELPSTRING",
+					"value" : ""
+				}
+			],
+			"type" : "UNINITIALIZED",
+			"value" : ""
 		},
 		{
 			"name" : "CMAKE_COMMAND",
@@ -538,22 +554,6 @@
 			"value" : ""
 		},
 		{
-			"name" : "CMAKE_EXPORT_COMPILE_COMMANDS",
-			"properties" : 
-			[
-				{
-					"name" : "ADVANCED",
-					"value" : "1"
-				},
-				{
-					"name" : "HELPSTRING",
-					"value" : "Enable/Disable output of compile commands during generation."
-				}
-			],
-			"type" : "BOOL",
-			"value" : ""
-		},
-		{
 			"name" : "CMAKE_EXTRA_GENERATOR",
 			"properties" : 
 			[
@@ -575,7 +575,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "C:/Users/frede/Documents/Projects/GitKraken Repo/IMN259/imn259_tp3_prog/cmake-build-debug/CMakeFiles/pkgRedirects"
+			"value" : "C:/Users/frede/OneDrive/Documents/Projet_GitKraken/IMN259/imn259_tp3_prog/cmake-build-debug/CMakeFiles/pkgRedirects"
 		},
 		{
 			"name" : "CMAKE_GENERATOR",
@@ -587,7 +587,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "Ninja"
+			"value" : "MinGW Makefiles"
 		},
 		{
 			"name" : "CMAKE_GENERATOR_INSTANCE",
@@ -647,7 +647,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "C:/Users/frede/Documents/Projects/GitKraken Repo/IMN259/imn259_tp3_prog"
+			"value" : "C:/Users/frede/OneDrive/Documents/Projet_GitKraken/IMN259/imn259_tp3_prog"
 		},
 		{
 			"name" : "CMAKE_INSTALL_PREFIX",
@@ -659,7 +659,7 @@
 				}
 			],
 			"type" : "PATH",
-			"value" : "C:/Program Files (x86)/imn259_tp3_prog"
+			"value" : "C:/Program Files (x86)/IMN259_TP3"
 		},
 		{
 			"name" : "CMAKE_LINKER",
@@ -682,12 +682,16 @@
 			"properties" : 
 			[
 				{
+					"name" : "ADVANCED",
+					"value" : "1"
+				},
+				{
 					"name" : "HELPSTRING",
-					"value" : "No help, variable specified on the command line."
+					"value" : "Path to a program."
 				}
 			],
-			"type" : "UNINITIALIZED",
-			"value" : "C:/Users/frede/AppData/Local/Programs/CLion/bin/ninja/win/x64/ninja.exe"
+			"type" : "FILEPATH",
+			"value" : "C:/Users/frede/AppData/Local/Programs/CLion/bin/mingw/bin/mingw32-make.exe"
 		},
 		{
 			"name" : "CMAKE_MODULE_LINKER_FLAGS",
@@ -1279,7 +1283,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "C:/Users/frede/Documents/Projects/GitKraken Repo/IMN259/imn259_tp3_prog/cmake-build-debug"
+			"value" : "C:/Users/frede/OneDrive/Documents/Projet_GitKraken/IMN259/imn259_tp3_prog/cmake-build-debug"
 		},
 		{
 			"name" : "IMN259_TP3_IS_TOP_LEVEL",
@@ -1303,7 +1307,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "C:/Users/frede/Documents/Projects/GitKraken Repo/IMN259/imn259_tp3_prog"
+			"value" : "C:/Users/frede/OneDrive/Documents/Projet_GitKraken/IMN259/imn259_tp3_prog"
 		},
 		{
 			"name" : "_CMAKE_LINKER_PUSHPOP_STATE_SUPPORTED",
@@ -1316,42 +1320,6 @@
 			],
 			"type" : "INTERNAL",
 			"value" : "TRUE"
-		},
-		{
-			"name" : "imn259_tp3_prog_BINARY_DIR",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : "Value Computed by CMake"
-				}
-			],
-			"type" : "STATIC",
-			"value" : "C:/Users/frede/Documents/Projects/GitKraken Repo/IMN259/imn259_tp3_prog/cmake-build-debug"
-		},
-		{
-			"name" : "imn259_tp3_prog_IS_TOP_LEVEL",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : "Value Computed by CMake"
-				}
-			],
-			"type" : "STATIC",
-			"value" : "ON"
-		},
-		{
-			"name" : "imn259_tp3_prog_SOURCE_DIR",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : "Value Computed by CMake"
-				}
-			],
-			"type" : "STATIC",
-			"value" : "C:/Users/frede/Documents/Projects/GitKraken Repo/IMN259/imn259_tp3_prog"
 		}
 	],
 	"kind" : "cache",

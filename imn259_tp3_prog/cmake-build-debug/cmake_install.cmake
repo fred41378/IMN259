@@ -1,8 +1,8 @@
-# Install script for directory: C:/Users/frede/Documents/Projects/GitKraken Repo/IMN259/imn259_tp3_prog
+# Install script for directory: C:/Users/frede/OneDrive/Documents/Projet_GitKraken/IMN259/imn259_tp3_prog
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "C:/Program Files (x86)/imn259_tp3_prog")
+  set(CMAKE_INSTALL_PREFIX "C:/Program Files (x86)/IMN259_TP3")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -52,6 +52,6 @@ endif()
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-  file(WRITE "C:/Users/frede/Documents/Projects/GitKraken Repo/IMN259/imn259_tp3_prog/cmake-build-debug/${CMAKE_INSTALL_MANIFEST}"
+  file(WRITE "C:/Users/frede/OneDrive/Documents/Projet_GitKraken/IMN259/imn259_tp3_prog/cmake-build-debug/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
 endif()
