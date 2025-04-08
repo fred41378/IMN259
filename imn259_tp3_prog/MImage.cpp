@@ -571,6 +571,12 @@ void MImage::GammaCorrect(float gamma) {
 void MImage::CorrelationFilter(const MImage &corrImg) {
     //On crée une image temporaire avec les dimensions de l'image en paramètre
     MImage temp(m_width, m_height, m_num_channels);
+    //On la vide
+    for (int y = 0; y < m_height; y++) {
+        for (int x = 0; x < m_width; x++) {
+            temp.SetColor(0, x, y);
+        }
+    }
 
     int half_corr_width = corrImg.GetWidth() / 2;
     int half_corr_height = corrImg.GetHeight() / 2;
@@ -764,6 +770,14 @@ void MImage::SpectralIdealHighPassFilter(float radius) {
 void MImage::SpectralAverageFilter(int halfwinsize) {
     //On crée une image temporaire avec les dimensions de l'image en paramètre
     MImage h(m_width, m_height, m_num_channels);
+    //On la vide
+    for (int y = 0; y < m_height; y++) {
+        for (int x = 0; x < m_width; x++) {
+            h.SetColor(0, x, y, 0);
+            h.SetColor(0, x, y, 1);
+        }
+    }
+
 
     int taille_filtre = 2 * halfwinsize + 1;
     float valeur_h = 1.0f / (taille_filtre * taille_filtre);
