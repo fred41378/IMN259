@@ -2,6 +2,8 @@
 
 #include <fstream>
 #include <algorithm>
+#include <cmath>
+#include <vector>
 
 using namespace std;
 
@@ -633,7 +635,7 @@ void MImage::LowpassGaussianFilter(float sigma) {
     MImage filtre(taille_filtre, taille_filtre, 1);
     float total = 0.0f;
     //super nom de variable tres original
-    const float deux_pi_sigma_carre = 2.0f * M_PI * sigma * sigma;
+    const float deux_pi_sigma_carre = 2.0f * numbers::pi * sigma * sigma;
     for (int y = 0; y < taille_filtre; ++y) {
         for (int x = 0; x < taille_filtre; ++x) {
             const int dx = x - centre;
@@ -713,7 +715,38 @@ void MImage::AverageFilter(int halfwinsize) {
         Use of the central difference
 */
 void MImage::NormGradientFilter(bool radical) {
-    // *************** TODO ****************
+    MImage temp(m_width, m_height, m_num_channels);
+
+    for (int y =0; y < m_height; ++y) {
+        for (int x = 0; x < m_width; ++x) {
+            int x_prec = std::max(x - 1, 0);
+            int x_suiv = std::min(x + 1, m_width - 1);
+            float intensite_x_prec = at(x_prec, y).r;
+            float intensite_x_suiv = at(x_suiv, y).r;
+
+            float gx = (intensite_x_suiv - intensite_x_prec) / 2.0f;
+
+            int y_prec = std::max(y - 1, 0);
+            int y_suiv = std::min(y + 1, m_height - 1);
+            float intensite_y_prec = at(x, y_prec).r;
+            float intensite_y_suiv = at(x, y_suiv).r;
+
+            float gy = (intensite_y_suiv - intensite_y_prec) / 2.0f;
+
+            float magnitude = gx * gx + gy * gy;
+            if (radical) {
+                temp.SetColor(sqrt(magnitude),x,y);
+            } else {
+                temp.SetColor(magnitude,x,y);
+            }
+        }
+    }
+
+    for (int y = 0; y < m_height; ++y) {
+        for (int x = 0; x < m_width; ++x) {
+            at(x, y) = temp.at(x, y);
+        }
+    }
 }
 
 /*
@@ -725,7 +758,18 @@ void MImage::NormGradientFilter(bool radical) {
     | 0  1  0 |
 */
 void MImage::LaplacianFilter() {
-    // *************** TODO ****************
+    MImage filtre_Laplacien(3, 3, 1);
+    filtre_Laplacien.SetColor(0.0f, 0, 0);
+    filtre_Laplacien.SetColor(1.0f, 1, 0);
+    filtre_Laplacien.SetColor(0.0f, 2, 0);
+    filtre_Laplacien.SetColor(1.0f, 0, 1);
+    filtre_Laplacien.SetColor(-4.0f, 1, 1);
+    filtre_Laplacien.SetColor(1.0f, 2, 1);
+    filtre_Laplacien.SetColor(0.0f, 0, 2);
+    filtre_Laplacien.SetColor(1.0f, 1, 2);
+    filtre_Laplacien.SetColor(0.0f, 2, 2);
+
+    CorrelationFilter(filtre_Laplacien);
 }
 
 
@@ -853,23 +897,95 @@ void MImage::SpectralAverageFilter(int halfwinsize) {
     Edge detection by thresholding the norm of the gradient of the current image
 */
 void MImage::EdgeDetec(float threshold) {
-    // *************** TODO ****************
     // Use NormGradientFilter
+    NormGradientFilter(true);
+
+    Threshold(threshold);
 }
 
 /*
     Laplacian of Gaussian Zero crossing
 */
 void MImage::ZeroCrossing(float sigma, float threshold) {
-    // *************** TODO ****************
     // Use LowpassGaussianFilter and LaplacianFilter
+    LowpassGaussianFilter(sigma);
+    LaplacianFilter();
+    MImage contours(m_width, m_height, 1);
+
+    for (int y = 0; y < m_height; ++y) {
+        for (int x = 0; x < m_width; ++x) {
+            float valeurs = at(x, y).r;
+            bool est_contour = false;
+            for (int dy = -1; dy <= 1; ++dy) {
+                for (int dx = -1; dx <= 1; ++dx) {
+                    if (dx == 0 && dy == 0) continue;
+
+                    int nx = x + dx;
+                    int ny = y + dy;
+
+                    if (nx >= 0 && nx < m_width && ny >= 0 && ny < m_height) {
+                        float voisin = at(nx, ny).r;
+
+                        if (voisin < -threshold && valeurs >= threshold) {
+                            est_contour = true;
+                        }
+                    }
+                }
+            }
+            contours.at(x, y).r = est_contour ? 255.0f : 0.0f;
+        }
+    }
+
+    *this = contours;
 }
 
 /*
     KMeans segmentation
 */
 void MImage::KMeansSegmentation() {
-    // *************** TODO ****************
+    MImage segmented(m_width, m_height, m_num_channels);
+
+    int x1 = rand() % m_width;
+    int y1 = rand() % m_height;
+    float mu1 = GetColor(x1, y1, 0);
+
+    int x2, y2;
+    float mu2;
+    do {
+        x2 = rand() % m_width;
+        y2 = rand() % m_height;
+        mu2 = GetColor(x2, y2, 0);
+    } while (mu2 == mu1);
+
+    vector etiquette(m_num_pixels, 0);
+
+    for (int i = 0; i < m_num_pixels; ++i) {
+        float comparaison_1 = (m_imgbuf[i].r - mu1) * (m_imgbuf[i].r - mu1);
+        float comparaison_2 = (m_imgbuf[i].r - mu2) * (m_imgbuf[i].r - mu2);
+        etiquette[i] = comparaison_2 < comparaison_1 ? 1.0f : 0.0f;
+    }
+    mu1 = 0.0f;
+    mu2 = 0.0f;
+    int nb_mu1 = 0;
+    int nb_mu2 = 0;
+    for (int i = 0; i < m_num_pixels; ++i) {
+        if (etiquette[i] == 1) {
+            mu2 += m_imgbuf[i].r;
+            nb_mu2++;
+        } else {
+            mu1 += m_imgbuf[i].r;
+            nb_mu1++;
+        }
+    }
+    if (nb_mu1 > 0) {
+        mu1 /= nb_mu1;
+    }
+    if (nb_mu2 > 0) {
+        mu2 /= nb_mu2;
+    }
+    for (int i = 0; i < m_num_pixels; i++) {
+        m_imgbuf[i].r = etiquette[i] == 1 ? 255.0f : 0.0f;
+    }
 }
 
 

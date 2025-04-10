@@ -2,7 +2,7 @@
 .SUFFIXES: .o .cpp
 
 CCC        = g++
-CCFLAGS    = -g -std=c++21
+CCFLAGS    = -g -std=c++20
 LIBS       = -lm
 EXECUTABLE = all
 OBJETS     = MImage.o
