@@ -914,6 +914,7 @@ void MImage::ZeroCrossing(float sigma, float threshold) {
 
     for (int y = 0; y < m_height; ++y) {
         for (int x = 0; x < m_width; ++x) {
+            contours.at(x, y).r = 0;
             float valeurs = at(x, y).r;
             bool est_contour = false;
             for (int dy = -1; dy <= 1; ++dy) {
@@ -936,7 +937,11 @@ void MImage::ZeroCrossing(float sigma, float threshold) {
         }
     }
 
-    *this = contours;
+    for (int y = 0; y < m_height; ++y) {
+        for (int x = 0; x < m_width; ++x) {
+            at(x, y) = contours.at(x, y);
+        }
+    }
 }
 
 /*
@@ -959,30 +964,46 @@ void MImage::KMeansSegmentation() {
 
     vector etiquette(m_num_pixels, 0);
 
-    for (int i = 0; i < m_num_pixels; ++i) {
-        float comparaison_1 = (m_imgbuf[i].r - mu1) * (m_imgbuf[i].r - mu1);
-        float comparaison_2 = (m_imgbuf[i].r - mu2) * (m_imgbuf[i].r - mu2);
-        etiquette[i] = comparaison_2 < comparaison_1 ? 1.0f : 0.0f;
-    }
-    mu1 = 0.0f;
-    mu2 = 0.0f;
-    int nb_mu1 = 0;
-    int nb_mu2 = 0;
-    for (int i = 0; i < m_num_pixels; ++i) {
-        if (etiquette[i] == 1) {
-            mu2 += m_imgbuf[i].r;
-            nb_mu2++;
-        } else {
-            mu1 += m_imgbuf[i].r;
-            nb_mu1++;
+    bool haschanged = false;
+    int nbLoops = 0;
+
+    do {
+        haschanged = false;
+        float n_mu1 = mu1;
+        float n_mu2 = mu2;
+        for (int i = 0; i < m_num_pixels; ++i) {
+            float comparaison_1 = (m_imgbuf[i].r - mu1) * (m_imgbuf[i].r - mu1);
+            float comparaison_2 = (m_imgbuf[i].r - mu2) * (m_imgbuf[i].r - mu2);
+            etiquette[i] = comparaison_2 < comparaison_1 ? 1.0f : 0.0f;
         }
-    }
-    if (nb_mu1 > 0) {
-        mu1 /= nb_mu1;
-    }
-    if (nb_mu2 > 0) {
-        mu2 /= nb_mu2;
-    }
+        mu1 = 0.0f;
+        mu2 = 0.0f;
+        int nb_mu1 = 0;
+        int nb_mu2 = 0;
+        for (int i = 0; i < m_num_pixels; ++i) {
+            if (etiquette[i] == 1) {
+                mu2 += m_imgbuf[i].r;
+                nb_mu2++;
+            } else {
+                mu1 += m_imgbuf[i].r;
+                nb_mu1++;
+            }
+        }
+        if (nb_mu1 > 0) {
+            mu1 /= nb_mu1;
+        }
+        if (nb_mu2 > 0) {
+            mu2 /= nb_mu2;
+        }
+        if (mu1 != n_mu1 || mu2 != n_mu2) {
+            haschanged = true;
+        }
+        std::cout << ++nbLoops << " " << mu2 << " " << n_mu1 <<std::endl;
+
+    }while (haschanged);
+
+
+
     for (int i = 0; i < m_num_pixels; i++) {
         m_imgbuf[i].r = etiquette[i] == 1 ? 255.0f : 0.0f;
     }
